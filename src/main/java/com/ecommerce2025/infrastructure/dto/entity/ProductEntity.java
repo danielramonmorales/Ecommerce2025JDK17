@@ -28,10 +28,14 @@ public class ProductEntity {
     @UpdateTimestamp
     private LocalDateTime dateUpdated;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     private UserEntity userEntity;
-    @ManyToOne
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
     private CategoryEntity categoryEntity;
+
 
 
 }

@@ -26,29 +26,14 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<Product> save(@RequestParam(value = "id", required = false) Integer id,
-                                        @RequestParam("code") String code,
-                                        @RequestParam("name") String name,
-                                        @RequestParam("description") String  description,
-                                        @RequestParam("price") BigDecimal price,
-                                        @RequestParam("urlImage")String urlImage,
-                                        @RequestParam("userId")Integer userId,
-                                        @RequestParam("categoryId")Integer categoryId,
-                                        @RequestParam(value = "image", required = false) MultipartFile multipartFile) throws IOException {
-        Product product = new Product();
-        if (id != null) {
-            product.setId(id);
-        }
-        product.setCode(code);
-        product.setName(name);
-        product.setDescription(description);
-        product.setPrice(price);
-        product.setCategoryId(categoryId);
-        product.setUserId(userId);
-        product.setUrlImage(urlImage);
-
-        log.info("NOmbre producto: {}", product.getName());
-        return  new ResponseEntity<>(productService.save(product), HttpStatus.CREATED);
+    public ResponseEntity<Product> save(@RequestBody Product product) {
+        log.info("Nombre producto: {}", product.getName());
+        return new ResponseEntity<>(productService.save(product), HttpStatus.CREATED);
+    }
+    @PutMapping("/{id}")
+    public ResponseEntity<Product> update(@PathVariable Integer id, @RequestBody Product product) {
+        product.setId(id); // Asegurás que usa el ID de la URL
+        return ResponseEntity.ok(productService.save(product));
     }
 
     @GetMapping

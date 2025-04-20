@@ -2,38 +2,72 @@ package com.ecommerce2025.application;
 
 import com.ecommerce2025.domain.model.Product;
 import com.ecommerce2025.domain.port.IProductRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 
-import java.io.IOException;
 import java.util.List;
 
+/**
+ * Servicio para manejar operaciones de productos.
+ * Permite la creación, lectura, eliminación y búsqueda de productos.
+ */
 public class ProductService {
-    private final IProductRepository iProductRepository;
 
+    private final IProductRepository productRepository;
 
-    public ProductService(IProductRepository iProductRepository) {
-        this.iProductRepository = iProductRepository;
+    public ProductService(IProductRepository productRepository) {
+        this.productRepository = productRepository;
     }
 
-
-    public Product save(Product product) throws IOException {
-        return this.iProductRepository.save(product);
+    /**
+     * Guarda un producto en el repositorio.
+     * Si ocurre un error de integridad, se lanza una excepción con un mensaje detallado.
+     * @param product el producto a guardar
+     * @return el producto guardado
+     */
+    public Product save(Product product) {
+        try {
+            return productRepository.save(product);
+        } catch (DataIntegrityViolationException ex) {
+            throw new RuntimeException("Error de integridad de datos al guardar el producto", ex);
+        }
     }
 
-
-    public Iterable<Product> findAll(){
-        return this.iProductRepository.findAll();
+    /**
+     * Recupera todos los productos.
+     * @return todos los productos
+     */
+    public Iterable<Product> findAll() {
+        return productRepository.findAll();
     }
 
-    public Product findById(Integer id){
-        return this.iProductRepository.findById(id);
+    /**
+     * Busca un producto por su ID.
+     * @param id el ID del producto
+     * @return el producto encontrado
+     * @throws RuntimeException si no se encuentra el producto con el ID proporcionado
+     */
+    public Product findById(Integer id) {
+        Product product = productRepository.findById(id);
+        if (product == null) {
+            throw new RuntimeException("Producto con ID " + id + " no encontrado.");
+        }
+        return product;
     }
-    public void deleteById(Integer id){
-        this.iProductRepository.deleteById(id);
+
+    /**
+     * Elimina un producto por su ID.
+     * @param id el ID del producto a eliminar
+     */
+    public void deleteById(Integer id) {
+        productRepository.deleteById(id);
     }
 
-
-
+    /**
+     * Busca productos por nombre.
+     * @param query la cadena de texto para buscar en los nombres de los productos
+     * @return una lista de productos que contienen el query en su nombre
+     */
     public List<Product> searchProducts(String query) {
-        return iProductRepository.findByNameContainingIgnoreCase(query);
+        return productRepository.findByNameContainingIgnoreCase(query);
     }
 }
