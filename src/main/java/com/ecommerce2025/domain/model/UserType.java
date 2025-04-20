@@ -1,4 +1,6 @@
 package com.ecommerce2025.domain.model;
 
-public class UserType {
+public enum UserType {
+    ADMIN, USER
 }
+
