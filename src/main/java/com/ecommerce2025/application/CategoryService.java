@@ -21,8 +21,13 @@ public class CategoryService {
      * @return la categoría persistida
      */
     public Category save(Category category) {
-        return categoryRepository.save(category);
+        try {
+            return categoryRepository.save(category);
+        } catch (IllegalArgumentException ex) {
+            throw new RuntimeException("Error al guardar la categoría: " + ex.getMessage(), ex);
+        }
     }
+
 
     /**
      * Recupera todas las categorías.

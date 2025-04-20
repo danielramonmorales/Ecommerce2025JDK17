@@ -83,6 +83,7 @@
 			<artifactId>rest-api-sdk</artifactId>
 			<version>1.14.0</version>
 		</dependency>
+
 		<!-- JUnit 5 -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
@@ -106,7 +107,6 @@
 			<version>5.12.0</version>
 			<scope>test</scope>
 		</dependency>
-
 	</dependencies>
 
 	<build>

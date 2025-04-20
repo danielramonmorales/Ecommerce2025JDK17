@@ -31,7 +31,7 @@ public interface UserMapper {
                     @Mapping(source = "password", target = "password"), // Mapea 'password'
                     @Mapping(source = "userType", target = "userType"), // Mapea 'userType'
                     @Mapping(source = "dateCreated", target = "dateCreated"), // Mapea 'dateCreated'
-                    @Mapping(source = "dateUpdate", target = "dateUpdate") // Mapea 'dateUpdate'
+                    @Mapping(source = "dateUpdate", target = "dateUpdated") // Mapea 'dateUpdate'
             }
     )
     User toUser(UserEntity userEntity); // Convierte una instancia de UserEntity a User
