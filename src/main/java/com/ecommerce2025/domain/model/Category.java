@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 public class Category {
     private Integer id;
     private String name;
+    private String description;
     private LocalDateTime dateCreated;
     private LocalDateTime dateUpdated;
 

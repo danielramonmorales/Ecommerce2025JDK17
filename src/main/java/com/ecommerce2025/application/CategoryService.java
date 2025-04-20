@@ -24,4 +24,10 @@ public class CategoryService {
     public void deleteById(Integer id){
         iCategoryRepository.deleteById(id);
     }
+
+    public Category updateCategory(Integer id, Category category) {
+        return iCategoryRepository.updateCategory(id, category);
+    }
+
+
 }

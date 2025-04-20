@@ -17,6 +17,7 @@ public class CategoryEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String name;
+    private String description;
     @CreationTimestamp
     private LocalDateTime dateCreated;
     @UpdateTimestamp

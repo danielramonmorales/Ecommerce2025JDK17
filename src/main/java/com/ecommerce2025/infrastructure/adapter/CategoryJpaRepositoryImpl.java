@@ -2,6 +2,7 @@ package com.ecommerce2025.infrastructure.adapter;
 
 import com.ecommerce2025.domain.model.Category;
 import com.ecommerce2025.domain.port.ICategoryRepository;
+import com.ecommerce2025.infrastructure.dto.entity.CategoryEntity;
 import com.ecommerce2025.infrastructure.mapper.CategoryMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -43,5 +44,19 @@ public class CategoryJpaRepositoryImpl implements ICategoryRepository {
                 () -> new RuntimeException("Categoria con id: "+id+" no existe")
         );
 
+    }
+
+    @Override
+    public Category updateCategory(Integer id, Category updatedCategory) {
+        CategoryEntity existingEntity = iCategoryJpaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Categoria con id: " + id + " no existe"));
+
+        // Actualizar los campos necesarios
+        existingEntity.setName(updatedCategory.getName());
+        existingEntity.setDescription(updatedCategory.getDescription());
+
+        // Guardar la entidad actualizada
+        CategoryEntity updatedEntity = iCategoryJpaRepository.save(existingEntity);
+        return categoryMapper.toCategory(updatedEntity);
     }
 }

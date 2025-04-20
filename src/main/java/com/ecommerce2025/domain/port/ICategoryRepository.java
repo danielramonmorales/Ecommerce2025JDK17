@@ -9,4 +9,5 @@ public interface ICategoryRepository {
     Iterable<Category> findAll();
     Category findById(Integer id);
     void deleteById(Integer id);
+    Category updateCategory(Integer id, Category updatedCategory);
 }
