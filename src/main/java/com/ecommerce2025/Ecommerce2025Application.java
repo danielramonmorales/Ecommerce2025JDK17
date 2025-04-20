@@ -12,3 +12,4 @@ public class Ecommerce2025Application {
 	}
 
 }
+//http://localhost:8080/swagger-ui.html
