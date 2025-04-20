@@ -1,10 +1,12 @@
-package com.ecommerce2025.infrastructure.adapter.implJpa;
+package com.ecommerce2025.infrastructure.adapter;
 
 import com.ecommerce2025.domain.model.Category;
 import com.ecommerce2025.domain.port.ICategoryRepository;
-import com.ecommerce2025.infrastructure.adapter.jpa.ICategoryJpaRepository;
 import com.ecommerce2025.infrastructure.mapper.CategoryMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class CategoryJpaRepositoryImpl implements ICategoryRepository {
 
     private final ICategoryJpaRepository iCategoryJpaRepository;
