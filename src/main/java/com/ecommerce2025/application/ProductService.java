@@ -3,6 +3,7 @@ package com.ecommerce2025.application;
 import com.ecommerce2025.domain.model.Product;
 import com.ecommerce2025.domain.port.IProductRepository;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -10,6 +11,7 @@ import java.util.List;
  * Servicio para manejar operaciones de productos.
  * Permite la creación, lectura, eliminación y búsqueda de productos.
  */
+@Service
 public class ProductService {
 
     private final IProductRepository productRepository;
@@ -65,7 +67,7 @@ public class ProductService {
     /**
      * Busca productos por nombre.
      * @param query la cadena de texto para buscar en los nombres de los productos
-     * @return una lista de productos que contienen el query en su nombre
+     * @return una lista de productos que contienen elquery en su nombre
      */
     public List<Product> searchProducts(String query) {
         return productRepository.findByNameContainingIgnoreCase(query);

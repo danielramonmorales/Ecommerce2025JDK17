@@ -15,14 +15,4 @@ public enum UserType {
      */
     USER;
 
-    // Opcional: Si querés mostrar un texto más legible o amigable (ej. en español), podés hacerlo así:
-    // private final String displayName;
-    //
-    // UserType(String displayName) {
-    //     this.displayName = displayName;
-    // }
-    //
-    // public String getDisplayName() {
-    //     return displayName;
-    // }
 }

@@ -2,11 +2,13 @@ package com.ecommerce2025.application;
 
 import com.ecommerce2025.domain.model.User;
 import com.ecommerce2025.domain.port.IUserRepository;
+import org.springframework.stereotype.Service;
 
 /**
  * Servicio para manejar las operaciones relacionadas con los usuarios.
  * Permite la creación, búsqueda y recuperación de información de usuarios.
  */
+@Service
 public class UserService {
 
     private final IUserRepository userRepository;

@@ -2,11 +2,13 @@ package com.ecommerce2025.application;
 
 import com.ecommerce2025.domain.model.Category;
 import com.ecommerce2025.domain.port.ICategoryRepository;
+import org.springframework.stereotype.Service;
 
 /**
  * Servicio de aplicación para operaciones relacionadas con la entidad Category.
  * Actúa como orquestador entre los controladores y los repositorios del dominio.
  */
+@Service
 public class CategoryService {
 
     private final ICategoryRepository categoryRepository;
