@@ -2,6 +2,8 @@ package com.ecommerce2025.infrastructure.controller;
 
 import com.ecommerce2025.application.ProductService;
 import com.ecommerce2025.domain.model.Product;
+import com.ecommerce2025.infrastructure.exception.ProductNotFoundException;
+import com.ecommerce2025.infrastructure.exception.BadRequestException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -34,6 +36,9 @@ public class ProductController {
     })
     @PostMapping
     public ResponseEntity<Product> save(@RequestBody Product product) {
+        if (product == null || product.getName() == null || product.getName().trim().isEmpty()) {
+            throw new BadRequestException("El nombre del producto no puede ser vacío.");
+        }
         log.info("Nombre producto: {}", product.getName());
         return new ResponseEntity<>(productService.save(product), HttpStatus.CREATED);
     }
@@ -47,6 +52,13 @@ public class ProductController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<Product> update(@PathVariable Integer id, @RequestBody Product product) {
+        if (product == null || product.getName() == null || product.getName().trim().isEmpty()) {
+            throw new BadRequestException("El nombre del producto no puede ser vacío.");
+        }
+        Product existingProduct = productService.findById(id);
+        if (existingProduct == null) {
+            throw new ProductNotFoundException("Producto no encontrado con ID: " + id);
+        }
         product.setId(id);
         return ResponseEntity.ok(productService.save(product));
     }
@@ -69,7 +81,11 @@ public class ProductController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<Product> findById(@PathVariable Integer id) {
-        return ResponseEntity.ok(productService.findById(id));
+        Product product = productService.findById(id);
+        if (product == null) {
+            throw new ProductNotFoundException("Producto no encontrado con ID: " + id);
+        }
+        return ResponseEntity.ok(product);
     }
 
     @Operation(summary = "Eliminar producto por ID", description = "Elimina un producto del sistema")
@@ -80,6 +96,10 @@ public class ProductController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<HttpStatus> deleteById(@PathVariable Integer id) {
+        Product product = productService.findById(id);
+        if (product == null) {
+            throw new ProductNotFoundException("Producto no encontrado con ID: " + id);
+        }
         productService.deleteById(id);
         return ResponseEntity.ok().build();
     }
@@ -92,6 +112,9 @@ public class ProductController {
     })
     @GetMapping("/search")
     public List<Product> searchProducts(@RequestParam String query) {
+        if (query == null || query.trim().isEmpty()) {
+            throw new BadRequestException("El parámetro de búsqueda no puede ser vacío.");
+        }
         return productService.searchProducts(query);
     }
 }

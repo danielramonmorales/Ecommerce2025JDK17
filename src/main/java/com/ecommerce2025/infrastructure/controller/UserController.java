@@ -2,6 +2,8 @@ package com.ecommerce2025.infrastructure.controller;
 
 import com.ecommerce2025.application.UserService;
 import com.ecommerce2025.domain.model.User;
+import com.ecommerce2025.infrastructure.exception.UserNotFoundException;
+import com.ecommerce2025.infrastructure.exception.BadRequestException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,6 +30,9 @@ public class UserController {
     })
     @PostMapping
     public User save(@RequestBody User user) {
+        if (user == null || user.getLastName() == null || user.getLastName().trim().isEmpty()) {
+            throw new BadRequestException("El nombre del usuario no puede ser vacío.");
+        }
         return userService.save(user);
     }
 
@@ -39,6 +44,10 @@ public class UserController {
     })
     @GetMapping("/{id}")
     public User findById(@PathVariable Integer id) {
-        return userService.findById(id);
+        User user = userService.findById(id);
+        if (user == null) {
+            throw new UserNotFoundException("Usuario no encontrado con ID: " + id);
+        }
+        return user;
     }
 }

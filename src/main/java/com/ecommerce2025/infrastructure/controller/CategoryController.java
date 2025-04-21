@@ -2,6 +2,8 @@ package com.ecommerce2025.infrastructure.controller;
 
 import com.ecommerce2025.application.CategoryService;
 import com.ecommerce2025.domain.model.Category;
+import com.ecommerce2025.infrastructure.exception.CategoryNotFoundException;
+import com.ecommerce2025.infrastructure.exception.BadRequestException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -32,6 +34,9 @@ public class CategoryController {
     })
     @PostMapping
     public ResponseEntity<Category> save(@RequestBody Category category) {
+        if (category == null || category.getName() == null || category.getName().trim().isEmpty()) {
+            throw new BadRequestException("El nombre de la categoría no puede ser vacío.");
+        }
         return new ResponseEntity<>(categoryService.save(category), HttpStatus.CREATED);
     }
 
@@ -53,7 +58,11 @@ public class CategoryController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<Category> findById(@PathVariable Integer id) {
-        return ResponseEntity.ok(categoryService.findById(id));
+        Category category = categoryService.findById(id);
+        if (category == null) {
+            throw new CategoryNotFoundException("Categoría no encontrada con ID: " + id);
+        }
+        return ResponseEntity.ok(category);
     }
 
     @Operation(summary = "Eliminar categoría por ID", description = "Elimina una categoría existente")
@@ -64,6 +73,10 @@ public class CategoryController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<HttpStatus> deleteById(@PathVariable Integer id) {
+        Category category = categoryService.findById(id);
+        if (category == null) {
+            throw new CategoryNotFoundException("Categoría no encontrada con ID: " + id);
+        }
         categoryService.deleteById(id);
         return ResponseEntity.ok().build();
     }
@@ -77,7 +90,14 @@ public class CategoryController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<Category> updateCategory(@PathVariable Integer id, @RequestBody Category category) {
-        Category updatedCategory = categoryService.updateCategory(id, category);
-        return ResponseEntity.ok(updatedCategory);
+        Category existingCategory = categoryService.findById(id);
+        if (existingCategory == null) {
+            throw new CategoryNotFoundException("Categoría no encontrada con ID: " + id);
+        }
+        if (category.getName() == null || category.getName().trim().isEmpty()) {
+            throw new BadRequestException("El nombre de la categoría no puede ser vacío.");
+        }
+        category.setId(id); // Asegura que el ID sea el correcto
+        return ResponseEntity.ok(categoryService.save(category));
     }
 }
