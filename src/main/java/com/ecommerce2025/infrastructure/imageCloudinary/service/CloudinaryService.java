@@ -1,37 +1,48 @@
 package com.ecommerce2025.infrastructure.imageCloudinary.service;
 
-
-// Importa la clase principal de Cloudinary para interactuar con elAPI
 import com.cloudinary.Cloudinary;
-// Utilidad para crear mapas que Cloudinary usa como parámetros
 import com.cloudinary.utils.ObjectUtils;
-
-// Anotaciones de Spring para inyección de dependencias y definición de servicios
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-// Para manejar archivos enviados en solicitudes HTTP
 import org.springframework.web.multipart.MultipartFile;
 
-// Librerías estándar para manejar excepciones y mapas
 import java.io.IOException;
 import java.util.Map;
 
-// Marca esta clase como un componente de servicio, para que Spring la detecte automáticamente
+/**
+ * Servicio encargado de manejar la lógica de interacción con Cloudinary.
+ * Permite subir imágenes al servicio en la nube y recuperar susURLs.
+ */
 @Service
 public class CloudinaryService {
 
-    // Inyección del objeto Cloudinary configurado en la clase CloudinaryConfig
     @Autowired
     private Cloudinary cloudinary;
 
-    // Método público que sube una imagen a Cloudinary y retorna la URL de acceso seguro
+    /**
+     * Sube una imagen a Cloudinary y retorna la URL segura generada.
+     * Validaque el archivo no esté vacío y sea una imagen.
+     *
+     * @param file Imagen enviada desde el cliente en formato multipart/form-data.
+     * @return URL segura (HTTPS) donde está alojada la imagen.
+     * @throws IOException Si el archivo no es válido o ocurre un error en la subida.
+     */
     public String uploadImage(MultipartFile file) throws IOException {
-        // Sube la imagen usando el método `upload` del uploader de Cloudinary
-        // Se pasa el contenido en bytes del archivo y un mapa vacío de opciones
+        // Validación: archivo no puede estar vacío
+        if (file.isEmpty()) {
+            throw new IOException("El archivo está vacío");
+        }
+
+        // Validación: tipo de contenido debe ser imagen
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IOException("El archivo debe ser una imagen válida");
+        }
+
+        // Subida a Cloudinary sin opciones adicionales
         Map<?, ?> result = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
 
-        // Extrae la URL segura del resultado (acceso HTTPS a la imagen)
+        // Retorna la URL segura (HTTPS) del archivo subido
         return result.get("secure_url").toString();
     }
 }

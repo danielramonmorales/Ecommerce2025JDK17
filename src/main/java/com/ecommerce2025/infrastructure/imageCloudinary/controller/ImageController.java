@@ -1,47 +1,66 @@
 package com.ecommerce2025.infrastructure.imageCloudinary.controller;
 
-// Paquete donde se encuentra esta clase
-;
-
-// Importaciones de Spring para controladores, respuestas HTTP, anotaciones, etc.
 import com.ecommerce2025.infrastructure.imageCloudinary.service.CloudinaryService;
-import org.springframework.beans.factory.annotation.Autowired; // Para inyectar dependencias automáticamente
-import org.springframework.http.HttpStatus; // Enum para los códigos de estado HTTP
-import org.springframework.http.ResponseEntity; // Representa toda la respuesta HTTP (cuerpo, estado, headers)
-import org.springframework.web.bind.annotation.PostMapping; // Mapea solicitudes HTTP POST
-import org.springframework.web.bind.annotation.RequestMapping; // Mapea rutas base a nivel de clase
-import org.springframework.web.bind.annotation.RequestParam; // Permite obtener parámetros de la solicitud
-import org.springframework.web.bind.annotation.RestController; // Marca esta clase como controlador REST
-import org.springframework.web.multipart.MultipartFile; // Representa un archivo enviado en una solicitud
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-// Librerías estándar de Java
-import java.io.IOException; // Excepción lanzada en operaciones de entrada/salida
-import java.util.Collections; // Utilidad para crear colecciones inmutables
+import java.io.IOException;
+import java.util.Collections;
 
-// Anotación que indica que esta clase es un controlador REST (retorna datos, no vistas)
+/**
+ * Controlador REST para manejar operaciones relacionadas con la subida de imágenes.
+ * Utiliza el servicio de Cloudinary para almacenar imágenes en la nube.
+ */
 @RestController
-// Define la ruta base para todas las peticiones que maneje este controlador
 @RequestMapping("/api/images")
 public class ImageController {
 
-    // Inyección automática del servicio de Cloudinary para manejar lógica de subida
     @Autowired
     private CloudinaryService cloudinaryService;
 
-    // Mapea una solicitud HTTP POST a la ruta /upload
+    /**
+     * Endpoint para subir una imagen a Cloudinary.
+     *
+     * @param file Imagen en formato multipart enviada desde el cliente.
+     * @return URL pública de la imagen si la subida es exitosa, o un mensaje de error.
+     */
+    @Operation(summary = "Sube una imagen a Cloudinary", description = "Permite subir un archivo de imagen y retorna la URL pública de la imagen almacenada" +
+            " en Cloudinary.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Imagen subida exitosamente",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(example = "{\"url\": \"https://res.cloudinary.com/...\"}"))),
+            @ApiResponse(responseCode = "400", description = "Archivo inválido",
+                    content = @Content(mediaType = "text/plain",
+                            schema = @Schema(example = "El archivo está vacío o no es una imagen válida"))),
+            @ApiResponse(responseCode = "500", description = "Error interno al subir imagen",
+                    content = @Content(mediaType = "text/plain",
+                            schema = @Schema(example = "Error al subir imagen")))
+    })
     @PostMapping("/upload")
-    public ResponseEntity<?> upload(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> upload(
+            @Parameter(description = "Archivo de imagen que se desea subir", required = true)
+            @RequestParam("file") MultipartFile file) {
         try {
-            // Intenta subir el archivo recibido al servicio de Cloudinary y obtener su URL
             String imageUrl = cloudinaryService.uploadImage(file);
-
-            // Retorna una respuesta 200 OK con un mapa JSON conteniendo la URL de la imagen
             return ResponseEntity.ok(Collections.singletonMap("url", imageUrl));
-
         } catch (IOException e) {
-            // En caso de error al subir la imagen, retorna un estado 500 con un mensaje de error
+            String message = e.getMessage();
+            // Si el mensaje de la excepción es de validación, se responde con 400 Bad Request
+            if ("El archivo está vacío".equals(message) || "El archivo debe ser una imagen válida".equals(message)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
+            }
+            // Para otros errores, se responde con 500
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al subir imagen");
         }
     }
 }
-
