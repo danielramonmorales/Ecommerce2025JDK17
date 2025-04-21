@@ -3,8 +3,7 @@ package com.ecommerce2025.infrastructure.imageCloudinary.controller;
 import com.ecommerce2025.infrastructure.imageCloudinary.service.CloudinaryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
+
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +19,8 @@ import java.util.Collections;
  * Controlador REST para manejar operaciones relacionadas con la subida de imágenes.
  * Utiliza el servicio de Cloudinary para almacenar imágenes en la nube.
  */
+
+
 @RestController
 @RequestMapping("/api/images")
 public class ImageController {
@@ -28,39 +29,84 @@ public class ImageController {
     private CloudinaryService cloudinaryService;
 
     /**
-     * Endpoint para subir una imagen a Cloudinary.
-     *
-     * @param file Imagen en formato multipart enviada desde el cliente.
-     * @return URL pública de la imagen si la subida es exitosa, o un mensaje de error.
+     * Sube una imagen a Cloudinary y guarda solo el public_id en la base de datos.
      */
-    @Operation(summary = "Sube una imagen a Cloudinary", description = "Permite subir un archivo de imagen y retorna la URL pública de la imagen almacenada" +
-            " en Cloudinary.")
+    @Operation(summary = "Sube una imagen a Cloudinary")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Imagen subida exitosamente",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(example = "{\"url\": \"https://res.cloudinary.com/...\"}"))),
-            @ApiResponse(responseCode = "400", description = "Archivo inválido",
-                    content = @Content(mediaType = "text/plain",
-                            schema = @Schema(example = "El archivo está vacío o no es una imagen válida"))),
-            @ApiResponse(responseCode = "500", description = "Error interno al subir imagen",
-                    content = @Content(mediaType = "text/plain",
-                            schema = @Schema(example = "Error al subir imagen")))
+            @ApiResponse(responseCode = "200", description = "Imagen subida exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Archivo inválido"),
+            @ApiResponse(responseCode = "500", description = "Error interno al subir imagen")
     })
     @PostMapping("/upload")
-    public ResponseEntity<?> upload(
+    public ResponseEntity<?> uploadImage(
             @Parameter(description = "Archivo de imagen que se desea subir", required = true)
             @RequestParam("file") MultipartFile file) {
         try {
-            String imageUrl = cloudinaryService.uploadImage(file);
-            return ResponseEntity.ok(Collections.singletonMap("url", imageUrl));
+            String publicId = cloudinaryService.uploadImage(file);
+            // Aquí puedes guardar el publicId en la base de datos de tu producto, por ejemplo
+            return ResponseEntity.ok(Collections.singletonMap("publicId", publicId));
         } catch (IOException e) {
-            String message = e.getMessage();
-            // Si el mensaje de la excepción es de validación, se responde con 400 Bad Request
-            if ("El archivo está vacío".equals(message) || "El archivo debe ser una imagen válida".equals(message)) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
-            }
-            // Para otros errores, se responde con 500
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al subir imagen");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al subir la imagen: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Elimina una imagen de Cloudinary usando el public_id.
+     */
+    @Operation(summary = "Elimina una imagen de Cloudinary")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Imagen eliminada exitosamente"),
+            @ApiResponse(responseCode = "500", description = "Error al eliminar la imagen")
+    })
+    @DeleteMapping("/delete/{publicId}")
+    public ResponseEntity<?> deleteImage(@PathVariable String publicId) {
+        try {
+            cloudinaryService.deleteImage(publicId);
+            return ResponseEntity.ok("Imagen eliminada exitosamente.");
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al eliminar la imagen: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Reemplaza la imagen en Cloudinary y actualiza el public_id del producto.
+     */
+    @Operation(summary = "Reemplaza una imagen existente en Cloudinary")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Imagen reemplazada exitosamente"),
+            @ApiResponse(responseCode = "500", description = "Error al reemplazar la imagen")
+    })
+    @PutMapping("/replace/{publicId}")
+    public ResponseEntity<?> replaceImage(
+            @PathVariable String publicId,
+            @RequestParam("file") MultipartFile file) {
+        try {
+            String newPublicId = cloudinaryService.replaceImage(publicId, file);
+            // Aquí debes actualizar el `public_id` en tu base de datos (por ejemplo, en el producto)
+            return ResponseEntity.ok("Imagen reemplazada exitosamente.");
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al reemplazar la imagen: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Genera la URL de la imagen a partir del public_id.
+     */
+    @Operation(summary = "Obtiene la URL de la imagen desde Cloudinary")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "URL de la imagen obtenida exitosamente"),
+            @ApiResponse(responseCode = "500", description = "Error al obtener la URL de la imagen")
+    })
+    @GetMapping("/url/{publicId}")
+    public ResponseEntity<?> getImageUrl(@PathVariable String publicId) {
+        try {
+            String imageUrl = cloudinaryService.getImageUrl(publicId);
+            return ResponseEntity.ok(Collections.singletonMap("imageUrl", imageUrl));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al obtener la URL de la imagen: " + e.getMessage());
         }
     }
 }

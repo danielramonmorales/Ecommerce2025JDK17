@@ -19,14 +19,7 @@ public class CloudinaryService {
     @Autowired
     private Cloudinary cloudinary;
 
-    /**
-     * Sube una imagen a Cloudinary y retorna la URL segura generada.
-     * Validaque el archivo no esté vacío y sea una imagen.
-     *
-     * @param file Imagen enviada desde el cliente en formato multipart/form-data.
-     * @return URL segura (HTTPS) donde está alojada la imagen.
-     * @throws IOException Si el archivo no es válido o ocurre un error en la subida.
-     */
+    // Sube una imagen a Cloudinary y retorna el public_id de la imagen
     public String uploadImage(MultipartFile file) throws IOException {
         // Validación: archivo no puede estar vacío
         if (file.isEmpty()) {
@@ -42,7 +35,26 @@ public class CloudinaryService {
         // Subida a Cloudinary sin opciones adicionales
         Map<?, ?> result = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
 
-        // Retorna la URL segura (HTTPS) del archivo subido
-        return result.get("secure_url").toString();
+        // Retorna el public_id de la imagen subida
+        return result.get("public_id").toString();
+    }
+
+    // Elimina una imagen de Cloudinary usando el public_id
+    public void deleteImage(String publicId) throws IOException {
+        cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+    }
+
+    // Reemplaza una imagen en Cloudinary (sube una nueva y elimina la antigua)
+    public String replaceImage(String publicId, MultipartFile file) throws IOException {
+        // Elimina la imagen anterior
+        deleteImage(publicId);
+
+        // Sube la nueva imagen y obtiene el nuevo public_id
+        return uploadImage(file);
+    }
+
+    // Genera la URL de la imagen a partir del public_id
+    public String getImageUrl(String publicId) {
+        return cloudinary.url().generate(publicId);
     }
 }

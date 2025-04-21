@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -29,7 +30,7 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @PostMapping
-    public User save(@RequestBody User user) {
+    public User save(@RequestBody @Valid User user) {
         if (user == null || user.getLastName() == null || user.getLastName().trim().isEmpty()) {
             throw new BadRequestException("El nombre del usuario no puede ser vacío.");
         }
