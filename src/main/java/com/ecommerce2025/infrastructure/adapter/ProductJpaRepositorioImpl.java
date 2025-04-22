@@ -11,6 +11,7 @@ import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component // Anotación para indicar que esta clase es un componente gestionado por Spring
 public class ProductJpaRepositorioImpl implements IProductRepository {
@@ -106,5 +107,11 @@ public class ProductJpaRepositorioImpl implements IProductRepository {
         List<ProductEntity> productEntities = iProductJpaRepository.findByNameContainingIgnoreCase(query);
         // Convertir las entidades a objetos de dominio y devolver la lista
         return (List<Product>) productMapper.toProductList(productEntities);
+    }
+
+    @Override
+    public Optional<Product> findByImagePublicId(String publicId) {
+        ProductEntity entity = iProductJpaRepository.findByImagePublicId(publicId);
+        return Optional.ofNullable(productMapper.toProduct(entity));
     }
 }

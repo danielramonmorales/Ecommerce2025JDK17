@@ -3,6 +3,7 @@ package com.ecommerce2025.domain.port;
 import com.ecommerce2025.domain.model.Product;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Puerto de acceso al repositorio de productos.
@@ -42,4 +43,6 @@ public interface IProductRepository {
      * @return una lista de productos coincidentes
      */
     List<Product> findByNameContainingIgnoreCase(String query);
+
+    Optional<Product> findByImagePublicId(String publicId);
 }

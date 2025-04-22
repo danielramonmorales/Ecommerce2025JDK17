@@ -22,4 +22,6 @@ public interface IProductJpaRepository extends JpaRepository<ProductEntity, Inte
      * @return Una lista de productos cuyo nombre contiene el texto proporcionado, sin importar mayúsculas o minúsculas.
      */
     List<ProductEntity> findByNameContainingIgnoreCase(String query);
+
+    ProductEntity findByImagePublicId(String publicId);
 }

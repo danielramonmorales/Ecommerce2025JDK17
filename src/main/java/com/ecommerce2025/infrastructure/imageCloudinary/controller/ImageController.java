@@ -1,9 +1,10 @@
 package com.ecommerce2025.infrastructure.imageCloudinary.controller;
 
+import com.ecommerce2025.domain.model.Product;
+import com.ecommerce2025.domain.port.IProductRepository;
 import com.ecommerce2025.infrastructure.imageCloudinary.service.CloudinaryService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,19 +16,26 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Controlador REST para manejar operaciones relacionadas con la subida de imágenes.
  * Utiliza el servicio de Cloudinary para almacenar imágenes en la nube.
  */
-
-
 @RestController
 @RequestMapping("/api/images")
 public class ImageController {
 
-    @Autowired
+
     private CloudinaryService cloudinaryService;
+
+    private IProductRepository iProductRepository;
+
+
+    public ImageController(CloudinaryService cloudinaryService, IProductRepository iProductRepository) {
+        this.cloudinaryService = cloudinaryService;
+        this.iProductRepository = iProductRepository;
+    }
 
     /**
      * Sube una imagen a Cloudinary y guarda solo el public_id en la base de datos.
@@ -68,9 +76,9 @@ public class ImageController {
     }
 
     /**
-     * Reemplaza la imagen en Cloudinary y actualiza el public_id del producto.
+     * Reemplaza la imagen en Cloudinary y actualiza el public_id del producto en la base de datos.
      */
-  /*  @Operation(summary = "Reemplaza una imagen existente en Cloudinary")
+    @Operation(summary = "Reemplaza una imagen existente en Cloudinary")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Imagen reemplazada exitosamente"),
             @ApiResponse(responseCode = "500", description = "Error al reemplazar la imagen")
@@ -80,14 +88,37 @@ public class ImageController {
             @PathVariable String publicId,
             @RequestParam("file") MultipartFile file) {
         try {
-            String newPublicId = cloudinaryService.replaceImage(publicId, file);
-            // Aquí debes actualizar el `public_id` en tu base de datos (por ejemplo, en el producto)
-            return ResponseEntity.ok("Imagen reemplazada exitosamente.");
+            // Llamamos al servicio para reemplazar la imagen en Cloudinary
+            Map<String, String> result = cloudinaryService.replaceImage(publicId, file);
+
+            // Extraemos la nueva URL y el public_id de la respuesta
+            String newUrl = result.get("urlImage");
+            String newPublicId = result.get("imagePublicId");
+
+            // Ahora actualizamos la base de datos
+            // Buscamos el producto por su publicId actual (deberías tenerlo en tu base de datos)
+            Optional<Product> optionalProducto = iProductRepository.findByImagePublicId(publicId);
+
+            if (optionalProducto.isPresent()) {
+                Product product = optionalProducto.get();
+                // Actualizamos los valores de la imagen
+                product.setUrlImage(newUrl);
+                product.setImagePublicId(newPublicId);
+
+                // Guardamos los cambios en la base de datos
+                iProductRepository.save(product);
+
+                return ResponseEntity.ok("Imagen reemplazada y datos actualizados correctamente.");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Producto con la imagen especificada no encontrado.");
+            }
+
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error al reemplazar la imagen: " + e.getMessage());
         }
-    }*/
+    }
 
     /**
      * Genera la URL de la imagen a partir del public_id.
