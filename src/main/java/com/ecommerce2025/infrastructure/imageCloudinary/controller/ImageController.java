@@ -7,7 +7,6 @@ import com.ecommerce2025.infrastructure.imageCloudinary.service.CloudinaryServic
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,9 +26,9 @@ import java.util.Optional;
 public class ImageController {
 
 
-    private CloudinaryService cloudinaryService;
+    private final CloudinaryService cloudinaryService;
 
-    private IProductRepository iProductRepository;
+    private final IProductRepository iProductRepository;
 
 
     public ImageController(CloudinaryService cloudinaryService, IProductRepository iProductRepository) {
@@ -56,10 +55,7 @@ public class ImageController {
         }
     }
 
-    /**
-     * Elimina una imagen de Cloudinary usando el public_id.
-     */
-    @Operation(summary = "Elimina una imagen de Cloudinary")
+    @Operation(summary = "Elimina una imagen de Cloudinary y actualiza la base de datos")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Imagen eliminada exitosamente"),
             @ApiResponse(responseCode = "500", description = "Error al eliminar la imagen")
@@ -67,13 +63,32 @@ public class ImageController {
     @DeleteMapping("/delete/{publicId}")
     public ResponseEntity<?> deleteImage(@PathVariable String publicId) {
         try {
+            // Elimina la imagen de Cloudinary
             cloudinaryService.deleteImage(publicId);
-            return ResponseEntity.ok("Imagen eliminada exitosamente.");
+
+            // Busca el producto asociado con el publicId de la imagen
+            Optional<Product> optionalProducto = iProductRepository.findByImagePublicId(publicId);
+
+            if (optionalProducto.isPresent()) {
+                Product product = optionalProducto.get();
+                // Establece la URL de la imagen y publicId a null o valores predeterminados
+                product.setUrlImage(null);
+                product.setImagePublicId(null);
+
+                // Guarda los cambios en la base de datos
+                iProductRepository.save(product);
+
+                return ResponseEntity.ok("Imagen eliminada de Cloudinary y datos actualizados en la base de datos.");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Producto con la imagen especificada no encontrado.");
+            }
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error al eliminar la imagen: " + e.getMessage());
         }
     }
+
 
     /**
      * Reemplaza la imagen en Cloudinary y actualiza el public_id del producto en la base de datos.
