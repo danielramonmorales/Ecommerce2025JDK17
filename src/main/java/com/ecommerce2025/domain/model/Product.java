@@ -53,12 +53,12 @@ public class Product {
     private LocalDateTime dateUpdated;
 
     /**
-     * ID del usuario que creó o administra el producto.
+     * IDdel usuario que creó o administra el producto.
      */
     private Integer userId;
 
     /**
-     * ID de la categoría a la que pertenece el producto.
+     * IDde la categoría a la que pertenece el producto.
      */
     private Integer categoryId;
 }

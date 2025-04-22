@@ -37,7 +37,7 @@ public class ProductEntity {
     @Size(max = 500, message = "La descripción del producto no puede exceder los 500 caracteres") // Longitud máxima de la descripción
     private String description; // La descripción del producto
 
-    @URL(message = "La URL de la imagen no es válida") // Validamos que la URL de la imagen sea válida
+   // @URL(message = "La URL de la imagen no es válida") // Validamos que la URL de la imagen sea válida
     private String urlImage; // URL de la imagen del producto
 
     @NotNull(message = "El precio no puede ser nulo") // Validamos que el precio no sea nulo

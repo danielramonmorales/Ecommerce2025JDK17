@@ -4,6 +4,8 @@ import com.ecommerce2025.application.ProductService;
 import com.ecommerce2025.domain.model.Product;
 import com.ecommerce2025.infrastructure.exception.ProductNotFoundException;
 import com.ecommerce2025.infrastructure.exception.BadRequestException;
+import com.ecommerce2025.infrastructure.imageCloudinary.service.CloudinaryService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -12,7 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -23,33 +27,47 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+    private final CloudinaryService cloudinaryService;
 
-    public ProductController(ProductService productService) {
+    public ProductController(ProductService productService, CloudinaryService cloudinaryService, CloudinaryService cloudinaryService1) {
         this.productService = productService;
+        this.cloudinaryService = cloudinaryService1;
     }
 
-    @Operation(summary = "Crear un nuevo producto", description = "Registra un nuevo producto en la base de datos")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Producto creado exitosamente"),
-            @ApiResponse(responseCode = "400", description = "Solicitud inválida"),
-            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
-    })
-    @PostMapping
-    public ResponseEntity<Product> save(@RequestBody Product product) {
-        if (product == null || product.getName() == null || product.getName().trim().isEmpty()) {
-            throw new BadRequestException("El nombre del producto no puede ser vacío.");
+
+    @PostMapping(consumes = {"multipart/form-data"})
+    public ResponseEntity<Product> save(
+            @RequestPart("product") String productJson,
+            @RequestPart("image") MultipartFile imageFile) {
+
+        try {
+            // Convertir el JSON string recibido a un objeto Product
+            ObjectMapper mapper = new ObjectMapper();
+            Product product = mapper.readValue(productJson, Product.class);
+
+            // Validación: verificar que el nombre del producto no sea vacío
+            if (product.getName() == null || product.getName().trim().isEmpty()) {
+                throw new BadRequestException("El nombre del producto no puede ser vacío.");
+            }
+
+            // Subir la imagen a Cloudinary
+            String imageUrl = cloudinaryService.uploadImage(imageFile);
+            product.setUrlImage(imageUrl);
+
+            // Guardar el producto
+            Product savedProduct = productService.save(product);
+
+            // Retornar el producto guardado con status 201 (creado)
+            return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
+
+        } catch (IOException e) {
+            log.error("Error al subir la imagen o parsear el producto", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
-        log.info("Nombre producto: {}", product.getName());
-        return new ResponseEntity<>(productService.save(product), HttpStatus.CREATED);
     }
 
-    @Operation(summary = "Actualizar producto", description = "Modifica los datos de un producto existente")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Producto actualizado correctamente"),
-            @ApiResponse(responseCode = "404", description = "Producto no encontrado"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
-            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
-    })
+
+
     @PutMapping("/{id}")
     public ResponseEntity<Product> update(@PathVariable Integer id, @RequestBody Product product) {
         if (product == null || product.getName() == null || product.getName().trim().isEmpty()) {
