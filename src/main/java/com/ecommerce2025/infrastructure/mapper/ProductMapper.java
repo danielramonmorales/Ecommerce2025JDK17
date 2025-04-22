@@ -31,6 +31,7 @@ public interface ProductMapper {
                     @Mapping(source = "description", target = "description"),
                     // Mapea el campo 'urlImage' de ProductEntity a 'urlImage' de Product
                     @Mapping(source = "urlImage", target = "urlImage"),
+                    @Mapping(source = "imagePublicId", target = "imagePublicId"),
                     // Mapea el campo 'price' de ProductEntity a 'price' de Product
                     @Mapping(source = "price", target = "price"),
                     // Mapea el campo 'dateCreated' de ProductEntity a 'dateCreated' de Product

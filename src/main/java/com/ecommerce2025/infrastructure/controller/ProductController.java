@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/v1/admin/products")
@@ -41,23 +42,25 @@ public class ProductController {
             @RequestPart("image") MultipartFile imageFile) {
 
         try {
-            // Convertir el JSON string recibido a un objeto Product
             ObjectMapper mapper = new ObjectMapper();
             Product product = mapper.readValue(productJson, Product.class);
 
-            // Validación: verificar que el nombre del producto no sea vacío
             if (product.getName() == null || product.getName().trim().isEmpty()) {
                 throw new BadRequestException("El nombre del producto no puede ser vacío.");
             }
 
-            // Subir la imagen a Cloudinary
-            String imageUrl = cloudinaryService.uploadImage(imageFile);
-            product.setUrlImage(imageUrl);
+            // Subir imagen y obtener datos
+            Map<String, String> imageData = cloudinaryService.uploadImage(imageFile);
+            product.setUrlImage(imageData.get("urlImage"));
+            product.setImagePublicId(imageData.get("imagePublicId"));
 
-            // Guardar el producto
+            // 🔍 Verificamos si los valores vienen bien
+            System.out.println("URL Imagen: " + product.getUrlImage());
+            System.out.println("Public ID: " + product.getImagePublicId());
+
+
             Product savedProduct = productService.save(product);
 
-            // Retornar el producto guardado con status 201 (creado)
             return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
 
         } catch (IOException e) {
@@ -65,6 +68,7 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
 
 
 

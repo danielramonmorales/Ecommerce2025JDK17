@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * Controlador REST para manejar operaciones relacionadas con la subida de imágenes.
@@ -38,13 +39,10 @@ public class ImageController {
             @ApiResponse(responseCode = "500", description = "Error interno al subir imagen")
     })
     @PostMapping("/upload")
-    public ResponseEntity<?> uploadImage(
-            @Parameter(description = "Archivo de imagen que se desea subir", required = true)
-            @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file) {
         try {
-            String publicId = cloudinaryService.uploadImage(file);
-            // Aquí puedes guardar el publicId en la base de datos de tu producto, por ejemplo
-            return ResponseEntity.ok(Collections.singletonMap("publicId", publicId));
+            Map<String, String> result = cloudinaryService.uploadImage(file);
+            return ResponseEntity.ok(result);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al subir la imagen: " + e.getMessage());
         }
@@ -72,7 +70,7 @@ public class ImageController {
     /**
      * Reemplaza la imagen en Cloudinary y actualiza el public_id del producto.
      */
-    @Operation(summary = "Reemplaza una imagen existente en Cloudinary")
+  /*  @Operation(summary = "Reemplaza una imagen existente en Cloudinary")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Imagen reemplazada exitosamente"),
             @ApiResponse(responseCode = "500", description = "Error al reemplazar la imagen")
@@ -89,7 +87,7 @@ public class ImageController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error al reemplazar la imagen: " + e.getMessage());
         }
-    }
+    }*/
 
     /**
      * Genera la URL de la imagen a partir del public_id.

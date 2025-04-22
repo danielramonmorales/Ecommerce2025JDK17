@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -19,37 +20,34 @@ public class CloudinaryService {
     @Autowired
     private Cloudinary cloudinary;
 
-    // Sube una imagen a Cloudinary y retorna el public_id de la imagen
-    public String uploadImage(MultipartFile file) throws IOException {
-        // Validación: archivo no puede estar vacío
-        if (file.isEmpty()) {
-            throw new IOException("El archivo está vacío");
-        }
+    public Map<String, String> uploadImage(MultipartFile file) throws IOException {
+        Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
 
-        // Validación: tipo de contenido debe ser imagen
-        String contentType = file.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw new IOException("El archivo debe ser una imagen válida");
-        }
+        String urlImage = (String) uploadResult.get("secure_url");
+        String publicId = (String) uploadResult.get("public_id");
 
-        // Subida a Cloudinary sin opciones adicionales
-        Map<?, ?> result = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+        Map<String, String> result = new HashMap<>();
+        result.put("urlImage", urlImage);            // debe llamarse así
+        result.put("imagePublicId", publicId);       // debe llamarse así
 
-        // Retorna el public_id de la imagen subida
-        return result.get("public_id").toString();
+        return result;
     }
+
+
 
     // Elimina una imagen de Cloudinary usando el public_id
     public void deleteImage(String publicId) throws IOException {
         cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
     }
 
-    // Reemplaza una imagen en Cloudinary (sube una nueva y elimina la antigua)
-    public String replaceImage(String publicId, MultipartFile file) throws IOException {
-        // Elimina la imagen anterior
-        deleteImage(publicId);
+    // Reemplaza una imagen en Cloudinary: sube una nueva y elimina la antigua
+    public Map<String, String> replaceImage(String oldPublicId, MultipartFile file) throws IOException {
+        // Primero eliminamos la imagen anterior si se proporcionó un publicId
+        if (oldPublicId != null && !oldPublicId.isBlank()) {
+            deleteImage(oldPublicId);
+        }
 
-        // Sube la nueva imagen y obtiene el nuevo public_id
+        // Luego subimos la nueva imagen y retornamos la info (url y publicId)
         return uploadImage(file);
     }
 

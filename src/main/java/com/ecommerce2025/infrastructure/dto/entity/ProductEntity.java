@@ -40,6 +40,10 @@ public class ProductEntity {
    // @URL(message = "La URL de la imagen no es válida") // Validamos que la URL de la imagen sea válida
     private String urlImage; // URL de la imagen del producto
 
+    @Column(name = "image_public_id")
+    private String imagePublicId;
+
+
     @NotNull(message = "El precio no puede ser nulo") // Validamos que el precio no sea nulo
     @Positive(message = "El precio debe ser mayor que cero") // Validamos que el precio sea positivo
     private BigDecimal price; // El precio del producto (utilizamos BigDecimal para precisión en valores numéricos)

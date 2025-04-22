@@ -38,6 +38,11 @@ public class Product {
     private String urlImage;
 
     /**
+     * URL o ruta de la imagen del producto.
+     */
+    private String imagePublicId;
+
+    /**
      * Precio del producto.
      */
     private BigDecimal price;
