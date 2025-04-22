@@ -54,7 +54,7 @@ public class BeanConfiguration {
      * @return una instancia de OrderService
      */
     @Bean
-    public OrderService orderService(IOrderRepository iOrderRepository){
-        return new OrderService(iOrderRepository);
+    public OrderService orderService(IOrderRepository iOrderRepository, IProductRepository iProductRepository){
+        return new OrderService(iOrderRepository, iProductRepository);
     }
 }
