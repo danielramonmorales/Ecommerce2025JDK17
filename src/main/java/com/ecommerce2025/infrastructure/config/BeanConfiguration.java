@@ -8,6 +8,7 @@ import com.ecommerce2025.domain.port.ICategoryRepository;
 import com.ecommerce2025.domain.port.IOrderRepository;
 import com.ecommerce2025.domain.port.IProductRepository;
 import com.ecommerce2025.domain.port.IUserRepository;
+import com.ecommerce2025.application.RegistrationService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -56,5 +57,10 @@ public class BeanConfiguration {
     @Bean
     public OrderService orderService(IOrderRepository iOrderRepository, IProductRepository iProductRepository){
         return new OrderService(iOrderRepository, iProductRepository);
+    }
+
+    @Bean
+    public RegistrationService registrationService(IUserRepository iUserRepository){
+       return new RegistrationService(iUserRepository);
     }
 }
