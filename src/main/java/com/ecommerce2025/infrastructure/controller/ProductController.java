@@ -30,7 +30,7 @@ public class ProductController {
     private final ProductService productService;
     private final CloudinaryService cloudinaryService;
 
-    public ProductController(ProductService productService, CloudinaryService cloudinaryService, CloudinaryService cloudinaryService1) {
+    public ProductController(ProductService productService, CloudinaryService cloudinaryService1) {
         this.productService = productService;
         this.cloudinaryService = cloudinaryService1;
     }
@@ -49,15 +49,14 @@ public class ProductController {
                 throw new BadRequestException("El nombre del producto no puede ser vacío.");
             }
 
+            if (product.getId() != null) {
+                throw new BadRequestException("No se debe enviar ID al crear un producto nuevo.");
+            }
+
             // Subir imagen y obtener datos
             Map<String, String> imageData = cloudinaryService.uploadImage(imageFile);
             product.setUrlImage(imageData.get("urlImage"));
             product.setImagePublicId(imageData.get("imagePublicId"));
-
-            // 🔍 Verificamos si los valores vienen bien
-            System.out.println("URL Imagen: " + product.getUrlImage());
-            System.out.println("Public ID: " + product.getImagePublicId());
-
 
             Product savedProduct = productService.save(product);
 
@@ -68,6 +67,7 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
 
 
 
