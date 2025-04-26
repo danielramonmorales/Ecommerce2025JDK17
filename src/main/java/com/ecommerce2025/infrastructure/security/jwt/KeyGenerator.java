@@ -8,7 +8,7 @@ public class KeyGenerator {
         SecureRandom random = new SecureRandom();
 
         // Genera un arreglo de bytes de 256 bits (32 bytes)
-        byte[] key = new byte[32];  // 32 bytes * 8 bits = 256 bits
+        byte[] key = new byte[64];  // 32 bytes * 8 bits = 256 bits
         random.nextBytes(key);
 
         // Codifica la clave en Base64

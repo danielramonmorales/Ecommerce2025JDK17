@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("api/v1/admin/products")
+@RequestMapping("/api/v1/admin/products")
 @CrossOrigin(origins = "http://localhost:4200")
 @Slf4j
 @Tag(name = "Productos", description = "Operaciones para la gestión de productos del e-commerce")
